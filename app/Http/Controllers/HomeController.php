@@ -23,6 +23,23 @@ class HomeController extends Controller
      */
     public function index()
     {
-        return view('home');
+        // this should return the list of domains
+        $domainList = [
+            "example1.com" => [
+                "DEFAULT",
+                "Channel1",
+                "Channel2"
+            ],
+            "example2.com" => [
+                "DEFAULT",
+                "Channel1",
+                "Channel2"
+            ]
+        ];
+
+        //$domainList = [];
+        return view('home')->with([
+            'domainList' => $domainList
+        ]);
     }
 }
