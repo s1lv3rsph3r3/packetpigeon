@@ -93,7 +93,7 @@
             position: relative;
             display: inline-block;
             width: 40px;
-            height: 28px;
+            height: 26px;
         }
 
         .switch input {
@@ -211,7 +211,7 @@
                 <div class="top-right links">
                     <form action="{{route('request.logout')}}" method="POST">
                         @csrf
-                        <a href="javascript:void(0);" onclick="parentNode.submit();">Logout</a>
+                        <a href="#" onclick="parentNode.submit();">Logout</a>
                     </form>
                 </div>
                 @endauth
@@ -222,5 +222,16 @@
             @yield('content')
         </main>
     </div>
+<script type="application/javascript">
+    $(document).ready(function(){
+        $(".modal").on("hidden.bs.modal", function() {
+            $(this).find('form').trigger("reset");
+        });
+
+        $(".modal").on("shown.bs.modal", function() {
+            $(this).find('input').focus();
+        });
+    });
+</script>
 </body>
 </html>
