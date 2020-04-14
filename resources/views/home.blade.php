@@ -2,6 +2,17 @@
 
 @section('content')
 <div class="container">
+
+    @if($errors->any())
+    <div class="row alert alert-danger alert-dismissable" style="display: flex; flex-direction: row; justify-content: space-between;">
+
+                    <h7>{{ $errors->first() }}</h7>
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+    </div>
+    @endif
+
     <div class="row justify-content-center">
         <div class="col-md-8">
 
@@ -22,7 +33,7 @@
                                     <label for="domain-name" class="col-md-4 col-form-label text-md-right">Domain Name:</label>
 
                                     <div class="col-md-6">
-                                        <input id="domain-name" type="text" spellcheck="false" class="form-control" name="domain-name" value="" />
+                                        <input id="domain-name" type="text" spellcheck="false" class="form-control" name="domain" value="" />
                                     </div>
                                 </div>
                             </div>
@@ -49,10 +60,18 @@
                             @csrf
                             <div class="modal-body">
                                 <div class="form-group row">
+                                    <label for="input-domain" class="col-md-4 col-form-label text-md-right">Domain:</label>
+
+                                    <div class="col-md-6">
+                                        <input id="input-domain" type="text" spellcheck="false" class="form-control" name="domain" value="" readonly/>
+                                    </div>
+                                </div>
+
+                                <div class="form-group row">
                                     <label for="channel-name" class="col-md-4 col-form-label text-md-right">Channel Name:</label>
 
                                     <div class="col-md-6">
-                                        <input id="channel-name" type="text" spellcheck="false" class="form-control" name="channel-name" value="" />
+                                        <input id="channel-name" type="text" spellcheck="false" class="form-control" name="channel" value="" />
                                     </div>
                                 </div>
                             </div>
@@ -91,7 +110,7 @@
                                     {{ $key }}
                                 </div>
                                 <div class="domain-options">
-                                    <a href="#" onclick="return false;" class="btn btn-success" data-toggle="modal" data-target="#newChannelModal">
+                                    <a href="#" onclick="updateSomething(this);" class="btn btn-success" data-toggle="modal" data-target="#newChannelModal">
                                         <i class="fas fa-plus-square"></i>
                                     </a>
                                 </div>

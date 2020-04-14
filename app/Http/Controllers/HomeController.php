@@ -4,6 +4,11 @@ namespace App\Http\Controllers;
 
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use App\Domain;
+use App\Channel;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class HomeController extends Controller
 {
@@ -39,6 +44,18 @@ class HomeController extends Controller
             ]
         ];
 
+        $domainList = [];
+        $list = Domain::where('userId', Auth::user()->id)->get();
+
+        foreach($list as $domain){
+            $domainList[$domain->domain] = DB::table('channels')
+                ->where('userId', Auth::user()->id)
+                ->where('domainId', $domain->id)
+            ->get()
+            ->pluck('channel')
+            ->toArray();
+        }
+
         //$domainList = [];
         return view('home')->with([
             'domainList' => $domainList
@@ -65,20 +82,61 @@ class HomeController extends Controller
     public function addNewDomain(Request $request){
         // this should add a new domain to the list of active domains in the account
 
-        // always redirect to home page with updated table
-        //return redirect()->route('home');
+        // Validation
+        // -> request should have a 'domain-name' field
+        // -> domain is required
+        // -> domain should be unique
+        $validator = Validator::make($request->all(), [
+           'domain' => 'required|unique:domains'
+        ]);
 
-        return 'adding new domain';
+        if($validator->fails()){
+            return redirect()->route('home')->withErrors(['error' => 'A problem occurred whilst attempting to create your domain.']);
+        }
+
+        // insert the domain into the DB
+        Domain::create([
+            'domain' => $request->input('domain'),
+            'userId' => Auth::user()->id
+        ]);
+
+        // return to home with success
+        return redirect()->route('home');
     }
 
     // POST - /new-channel
     public function addNewChannel(Request $request){
         // this should add a new channel to the list of channels in a given domain
+        $validator = Validator::make($request->all(), [
+           'domain' => 'required|exists:domains',
+           'channel' => 'required'
+        ]);
 
-        // always redirect to home page with updated table
-        //return redirect()->route('home');
+        if($validator->fails()){
+            return redirect()->route('home')->withErrors(['error' => 'A problem occurred whilst attempting to create your domain.']);
+        }
 
-        return 'adding new channel';
+        $domain = Domain::where('domain', $request->input('domain'))->first();
+
+        // check uniqueness on the channel name
+        $list = Channel::where('userId', Auth::user()->id)
+                        ->where('domainId', $domain->id)
+                        ->where('channel', $request->input('channel'))
+                        ->get();
+
+        if($list->count() !== 0){
+            return redirect()->route('home')->withErrors(['error' => 'A problem occurred whilst attempting to create your domain.']);
+        }
+
+        // create the new channel
+        Channel::create([
+           'userId' => Auth::user()->id,
+           'domainId' => $domain->id,
+           'channel' => $request->input('channel')
+        ]);
+
+        // return to home with success
+        return redirect()->route('home');
     }
 
     // POST - /enable-channel

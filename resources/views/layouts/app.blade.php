@@ -233,5 +233,11 @@
         });
     });
 </script>
+<script>
+    function updateSomething(param){
+        var domain = $(param).closest('.domain-card').find('.domain-name').text().trim();
+        $('#newChannelModal').find('#input-domain').val(domain);
+    }
+</script>
 </body>
 </html>
