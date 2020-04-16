@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\User;
+use GuzzleHttp\Client;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -94,11 +96,41 @@ class HomeController extends Controller
             return redirect()->route('home')->withErrors(['error' => 'A problem occurred whilst attempting to create your domain.']);
         }
 
+        // need to create a unique key pair for new domain
+
         // insert the domain into the DB
-        Domain::create([
+        $domain = Domain::create([
             'domain' => $request->input('domain'),
             'userId' => Auth::user()->id
         ]);
+
+        /* Each new domain will come with a DEFAULT channel */
+        // create the new channel
+        $channel = Channel::create([
+            'userId' => Auth::user()->id,
+            'domainId' => $domain->id,
+            'channel' => 'DEFAULT'
+        ]);
+
+        // send request to add this to the server
+        $client = new Client();
+        $response = $client->request(
+            'POST',
+            'https://packetpigeon.com:8080/default/create-new-domain',
+            [
+                'json' => [
+                    'username' => 'admin',
+                    'password' => 'password',
+                    'userId' => (Auth::user())->id,
+                    'email' => Auth::user()->email,
+                    'domain' => $domain->domain,
+                    'channel' => $channel->channel,
+                ]
+            ]
+        );
+        // Parse the response object, e.g. read the headers, body, etc.
+        // $headers = $response->getHeaders();
+        // $body = $response->getBody();
 
         // return to home with success
         return redirect()->route('home');
@@ -113,27 +145,47 @@ class HomeController extends Controller
         ]);
 
         if($validator->fails()){
-            return redirect()->route('home')->withErrors(['error' => 'A problem occurred whilst attempting to create your domain.']);
+            return redirect()->route('home')->withErrors(['error' => 'A problem occurred whilst attempting to create your channel.']);
         }
 
         $domain = Domain::where('domain', $request->input('domain'))->first();
 
         // check uniqueness on the channel name
-        $list = Channel::where('userId', Auth::user()->id)
+        $list = Channel::where('userId', (Auth::user())->id)
                         ->where('domainId', $domain->id)
                         ->where('channel', $request->input('channel'))
                         ->get();
 
         if($list->count() !== 0){
-            return redirect()->route('home')->withErrors(['error' => 'A problem occurred whilst attempting to create your domain.']);
+            return redirect()->route('home')->withErrors(['error' => 'A problem occurred whilst attempting to create your channel.']);
         }
 
         // create the new channel
-        Channel::create([
+        $channel = Channel::create([
            'userId' => Auth::user()->id,
            'domainId' => $domain->id,
            'channel' => $request->input('channel')
         ]);
+
+        // send request to add this to the server
+        $client = new Client();
+        $response = $client->request(
+            'POST',
+            'https://packetpigeon.com:8080/default/create-new-channel',
+            [
+                'json' => [
+                    'username' => 'admin',
+                    'password' => 'password',
+                    'userId' => (Auth::user())->id,
+                    'email' => (Auth::user())->email,
+                    'domain' => $domain->domain,
+                    'channel' => $channel->channel,
+                ]
+            ]
+        );
+        // Parse the response object, e.g. read the headers, body, etc.
+        // $headers = $response->getHeaders();
+        // $body = $response->getBody();
 
         // return to home with success
         return redirect()->route('home');

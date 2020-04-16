@@ -126,12 +126,14 @@
                                     </div>
 
                                     <div class="options-wrapper vertical-center right-options">
+                                        <!--
                                         <div class="active-btn channel-option">
                                             <label class="switch" style="margin-bottom: 0;">
                                                 <input type="checkbox" checked>
                                                 <span class="slider round"></span>
                                             </label>
                                         </div>
+                                        -->
                                         <div class="delete-btn channel-option">
                                             <i class="fas fa-trash-alt" style="font-size:28px;color:red"></i>
                                         </div>

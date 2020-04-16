@@ -45,11 +45,11 @@ Route::post('/delete-domain', 'HomeController@deleteDomain')->name('request.dele
 
 // Beta testing only - will be removed in future release
 Route::get('/beta-user', function(){
-    $user = User::where('email', 'neshanthan.a@gmail.com')->count();
+    $user = User::where('email', 'test@test.com')->count();
     if($user === 0){
         User::create([
-           'name' => 'Neshanthan',
-           'email' => 'neshanthan.a@gmail.com',
+           'name' => 'Test',
+           'email' => 'test@test.com',
             'password' => bcrypt('password')
         ]);
 
