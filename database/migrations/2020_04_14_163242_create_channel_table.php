@@ -29,6 +29,6 @@ class CreateChannelTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('channel');
+        Schema::dropIfExists('channels');
     }
 }

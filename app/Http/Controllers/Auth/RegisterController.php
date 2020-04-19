@@ -5,9 +5,17 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Providers\RouteServiceProvider;
 use App\User;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\RequestException;
+use Illuminate\Contracts\Auth\StatefulGuard;
+use Illuminate\Contracts\View\Factory;
 use Illuminate\Foundation\Auth\RegistersUsers;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\View\View;
 
 class RegisterController extends Controller
 {
@@ -21,8 +29,6 @@ class RegisterController extends Controller
     | provide this functionality without requiring any additional code.
     |
     */
-
-    use RegistersUsers;
 
     /**
      * Where to redirect users after registration.
@@ -41,6 +47,55 @@ class RegisterController extends Controller
         $this->middleware('guest');
     }
 
+    public function register(Request $request){
+
+        $this->validator($request->all())->validate();
+
+        // Trigger a successful registered event
+        // event(new Registered($user = $this->create($request->all())));
+
+        // Create the user
+        $user = $this->create($request->all());
+
+        $this->guard()->login($user);
+
+        // API request to the node server to initiate contact
+        // send request to add this to the server
+        $client = new Client();
+        try{
+            $response = $client->request(
+                'POST',
+                'https://packetpigeon.com:8080/default/register-new-user',
+                [
+                    'json' => [
+                        'username' => 'admin',
+                        'password' => 'password',
+                        'userId' => (Auth::user())->id,
+                    ]
+                ]
+            );
+        } catch (RequestException $exception) {
+            if($exception->hasResponse()) {
+                // Server exception is thrown under particular instances
+                // Consider how this will impact the service
+                // dd(json_decode((string)$exception->getResponse()->getBody()));
+            }
+        }
+
+        // return redirect to home
+        return redirect()->route('home');
+    }
+    /**
+     * Show the application registration form.
+     *
+     * @return Factory|View
+     */
+    public function showRegistrationForm()
+    {
+        return view('auth.register');
+    }
+
+
     /**
      * Get a validator for an incoming registration request.
      *
@@ -50,7 +105,6 @@ class RegisterController extends Controller
     protected function validator(array $data)
     {
         return Validator::make($data, [
-            'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
@@ -60,14 +114,23 @@ class RegisterController extends Controller
      * Create a new user instance after a valid registration.
      *
      * @param  array  $data
-     * @return \App\User
+     * @return User
      */
     protected function create(array $data)
     {
         return User::create([
-            'name' => $data['name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
         ]);
+    }
+
+    /**
+     * Get the guard to be used during registration.
+     *
+     * @return StatefulGuard
+     */
+    protected function guard()
+    {
+        return Auth::guard();
     }
 }

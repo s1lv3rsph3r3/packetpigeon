@@ -25,6 +25,8 @@ Route::get('/', function () {
 Route::get('/login', 'Auth\LoginController@showLoginForm')->name('form.login');
 Route::post('/login', 'Auth\LoginController@login')->name('request.login');
 Route::post('/logout', 'Auth\LoginController@logout')->name('request.logout');
+Route::get('/register', 'Auth\RegisterController@showRegistrationForm')->name('form.register');
+Route::post('/register', 'Auth\RegisterController@register')->name('request.register');
 
 // Home page is displayed
 Route::get('/home', 'HomeController@index')->name('home');
