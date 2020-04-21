@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\User;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\RequestException;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -93,7 +94,8 @@ class HomeController extends Controller
         ]);
 
         if($validator->fails()){
-            return redirect()->route('home')->withErrors(['error' => 'A problem occurred whilst attempting to create your domain.']);
+            return redirect()->route('home')
+                ->withErrors(['error' => 'A problem occurred whilst attempting to create your domain.']);
         }
 
         // need to create a unique key pair for new domain
@@ -112,22 +114,42 @@ class HomeController extends Controller
             'channel' => 'DEFAULT'
         ]);
 
+        // API request to the node server to initiate contact
         // send request to add this to the server
         $client = new Client();
-        $response = $client->request(
-            'POST',
-            'https://packetpigeon.com:8080/default/create-new-domain',
-            [
-                'json' => [
-                    'username' => 'admin',
-                    'password' => 'password',
-                    'userId' => (Auth::user())->id,
-                    'email' => Auth::user()->email,
-                    'domain' => $domain->domain,
-                    'channel' => $channel->channel,
+        try{
+            $response = $client->request(
+                'POST',
+                'https://packetpigeon.com:8080/default/create-new-domain',
+                [
+                    'json' => [
+                        'username' => config('app.engine_access_key'),
+                        'password' => config('app.engine_access_secret'),
+                        'userId' => (Auth::user())->id,
+                        'email' => Auth::user()->email,
+                        'domain' => $domain->domain,
+                        'channel' => $channel->channel,
+                    ]
                 ]
-            ]
-        );
+            );
+
+        } catch (RequestException $exception) {
+            if($exception->hasResponse()) {
+                // Server exception is thrown under particular instances
+                // Consider how this will impact the service
+                // track errors from the API server
+                // dd(json_decode((string)$exception->getResponse()->getBody()));
+            }
+
+            // Delete the domain and default channel if the API call fails
+            $domain->delete();
+            $channel->delete();
+
+            // return with errors back to register page
+            return redirect()->route('home')
+                ->withErrors(['error' => 'A problem occurred whilst attempting to create your domain.']);
+        }
+
         // Parse the response object, e.g. read the headers, body, etc.
         // $headers = $response->getHeaders();
         // $body = $response->getBody();

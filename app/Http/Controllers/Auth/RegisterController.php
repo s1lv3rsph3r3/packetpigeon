@@ -57,8 +57,6 @@ class RegisterController extends Controller
         // Create the user
         $user = $this->create($request->all());
 
-        $this->guard()->login($user);
-
         // API request to the node server to initiate contact
         // send request to add this to the server
         $client = new Client();
@@ -68,18 +66,30 @@ class RegisterController extends Controller
                 'https://packetpigeon.com:8080/default/register-new-user',
                 [
                     'json' => [
-                        'username' => 'admin',
-                        'password' => 'password',
-                        'userId' => (Auth::user())->id,
+                        'username' => config('app.engine_access_key'),
+                        'password' => config('app.engine_access_secret'),
+                        'userId' => $user->id,
                     ]
                 ]
             );
+
+            // Login the user if the request was successful
+            $this->guard()->login($user);
+
         } catch (RequestException $exception) {
             if($exception->hasResponse()) {
                 // Server exception is thrown under particular instances
                 // Consider how this will impact the service
+                // track errors from the API server
                 // dd(json_decode((string)$exception->getResponse()->getBody()));
             }
+
+            // Delete the user if the API call fails
+            $user->delete();
+
+            // return with errors back to register page
+            return redirect()->route('form.register')
+                ->withErrors(['error' => 'A problem occurred whilst attempting to create your account. Please try back soon.']);
         }
 
         // return redirect to home

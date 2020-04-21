@@ -123,6 +123,9 @@ return [
 
     'cipher' => 'AES-256-CBC',
 
+    'engine_access_key' => env('ENGINE_ACCESS_KEY'),
+    'engine_access_secret' => env('ENGINE_ACCESS_SECRET'),
+
     /*
     |--------------------------------------------------------------------------
     | Autoloaded Service Providers

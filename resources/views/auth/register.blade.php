@@ -2,6 +2,17 @@
 
 @section('content')
 <div class="container">
+
+    @if($errors->any())
+        <div class="row alert alert-danger alert-dismissable" style="display: flex; flex-direction: row; justify-content: space-between;">
+
+            <h7>{{ $errors->first() }}</h7>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    @endif
+
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card">
