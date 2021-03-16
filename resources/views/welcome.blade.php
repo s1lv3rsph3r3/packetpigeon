@@ -167,6 +167,7 @@
             <ol>
                 <li>
                     <b>Embed the script in a simple HTML page</b>
+                    <p>You can access this HTML document at <a>https://github.com/s1lv3rsph3r3/packet-pigeon-client/blob/master/target/index.html</a> or alternatively you can copy and paste.</p>
                     <pre>
                                 <code style="border-radius: 25px;" class="language-html">
 &lt;!DOCTYPE html&gt;
@@ -176,23 +177,26 @@
     &lt;title&gt;Title&lt;/title&gt;
 &lt;/head&gt;
 &lt;body&gt;
-&lt;script&gt;
-    // Create the new instance of a PacketPigeon
-    var packetPigeon = new PacketPigeon();
-
-    // Subscribe to the specific channels that you require
-    packetPigeon.subscribe('ExampleChannel', 'ExampleEvent', function evt(){
-        console.log('This is the ExampleEvent on ExampleChannel');
-    });
-
-    packetPigeon.subscribe('ExampleChannel', 'ExampleEvent2', function evt2(){
-        console.log('This is the ExampleEvent2 on ExampleChannel');
-    });
-
-    /* At present, all data passed through these events will be logged in the console */
-&lt;/script&gt;
 &lt;!-- Embed the package pigeon script here to load a connection --&gt;
-&lt;script type="application/javascript" src="../dist/bundle.js"&gt;&lt;/script&gt;
+&lt;script src="https://cdn.jsdelivr.net/npm/packet-pigeon-client@2.0.0-beta.1/dist/bundle.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  // Create the new instance of a PacketPigeon
+  const packetPigeon = new PacketPigeon();
+
+  // Subscribe to the specific channels that you require
+  packetPigeon.subscribe('DEFAULT', 'testing', function evt(data){
+
+    // Do whatever you want with the data of your message
+
+    // In this case we just append the data to the document
+    const pre = document.createElement("pre");
+    const code = document.createElement("code");
+    code.classList.add("language-json");
+    code.innerHTML = JSON.stringify(data, null, 2);
+    pre.appendChild(code);
+    document.body.appendChild(pre);
+  });
+&lt;/script&gt;
 &lt;/body&gt;
 &lt;/html&gt;
                                 </code>
@@ -204,13 +208,18 @@
                                 <code class="language-bash" style="border-radius: 15px;">
 curl --header "Content-Type: application/json" \
   --request POST \
-  --data '{"channel":"DEFAULT","event":"test-event","data":"Hello world"}' \
-  https://api.packetpigeon.com
+  --data '{"channel":"DEFAULT","event":"testing","data":"Hello world"}' \
+  https://api.packetpigeon.com/api/v1/default/message
                                 </code>
                             </pre>
                 </li>
                 <li>
                     <b>Realise realtime events in your clients web browsers XD</b>
+                </li>
+                <li>
+                    Known problems: By default, browsers, such as Google Chrome don't allow you to send cross-origin requests for security purposes.
+                    Since this HTML will be rendered and running on your local machine, I would advise you use a plugin such as: <a>https://chrome.google.com/webstore/detail/allow-cors-access-control/lhobafahddgcelffkeicbaginigeejlf</a>
+                    for chrome. This allows you to toggle CORS settings for playing around with our service.
                 </li>
             </ol>
         </div>
