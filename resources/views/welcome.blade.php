@@ -12,9 +12,9 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
 
     <!-- Custom styles for this template -->
-    <link href="dist/css/starter-template.css" rel="stylesheet">
-    <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/agate.min.css">
-    <script src="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/highlight.min.js"></script>
+   <!-- <link href="dist/css/starter-template.css" rel="stylesheet"> -->
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/agate.min.css">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/highlight.min.js"></script>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -136,7 +136,7 @@
 <body>
 
 <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
-    <div class="navbar-brand" href="#">Service Status: <div style="cursor: default;" class="btn blink_me my-2 my-sm-0" type="submit">Pre - Launch</div></div>
+    <div class="navbar-brand" href="#">Service Status: <div style="cursor: default;" class="btn blink_me my-2 my-sm-0" type="submit">LIVE</div></div>
 </nav>
 
 <main role="main" class="container">
@@ -165,9 +165,31 @@
         <h2 style="text-align: left;">Installation & Implementation (BETA)</h2>
         <div style="text-align: left;">
             <ol>
+		<li>
+		    <h3>Use our built working sample:</h3>
+		    <ul>
+			<li>
+			                        <b>You can play around on our sample page <a href="https://packetpigeon.com/working-sample">Working Sample</a></b>
+                    <p>
+                                            <b>Send a request from your terminal to this endpoint with a request body.</b>
+                    <pre>
+                                <code class="language-bash" style="border-radius: 15px;">
+curl --header "Content-Type: application/json" \
+  --request POST \
+  --data '{"channel":"DEFAULT","event":"testing","data":"Hello world"}' \
+  https://api.packetpigeon.com/api/v1/default/message
+                                </code>
+                            </pre>
+                    </p>
+			</li>
+		    </ul>
+		</li>
+		<li>
+		    <h3>Running it locally with a HTML snippet:</h3>
+		<ul>
                 <li>
                     <b>Embed the script in a simple HTML page</b>
-                    <p>You can access this HTML document at <a>https://github.com/s1lv3rsph3r3/packet-pigeon-client/blob/master/target/index.html</a> or alternatively you can copy and paste.</p>
+                    <span>You can access this HTML document on <a href="https://github.com/s1lv3rsph3r3/packet-pigeon-client/blob/master/target/index.html">Github</a> or alternatively you can copy and paste.</span>
                     <pre>
                                 <code style="border-radius: 25px;" class="language-html">
 &lt;!DOCTYPE html&gt;
@@ -178,7 +200,7 @@
 &lt;/head&gt;
 &lt;body&gt;
 &lt;!-- Embed the package pigeon script here to load a connection --&gt;
-&lt;script src="https://cdn.jsdelivr.net/npm/packet-pigeon-client@2.0.0-beta.1/dist/bundle.js"&gt;&lt;/script&gt;
+&lt;script src="https://cdn.jsdelivr.net/npm/packet-pigeon-client@2.0.0-beta.2/dist/bundle.js"&gt;&lt;/script&gt;
 &lt;script&gt;
   // Create the new instance of a PacketPigeon
   const packetPigeon = new PacketPigeon();
@@ -203,7 +225,7 @@
                             </pre>
                 </li>
                 <li>
-                    <b>Send a request from your terminal request to this endpoint with a request body.</b>
+                    <b>Send a request from your terminal to this endpoint with a request body.</b>
                     <pre>
                                 <code class="language-bash" style="border-radius: 15px;">
 curl --header "Content-Type: application/json" \
@@ -218,9 +240,11 @@ curl --header "Content-Type: application/json" \
                 </li>
                 <li>
                     Known problems: By default, browsers, such as Google Chrome don't allow you to send cross-origin requests for security purposes.
-                    Since this HTML will be rendered and running on your local machine, I would advise you use a plugin such as: <a>https://chrome.google.com/webstore/detail/allow-cors-access-control/lhobafahddgcelffkeicbaginigeejlf</a>
+                    Since this HTML will be rendered and running on your local machine, I would advise you use a plugin such as: <a href="https://chrome.google.com/webstore/detail/allow-cors-access-control/lhobafahddgcelffkeicbaginigeejlf">Allow-Cors-Access-Control</a>
                     for chrome. This allows you to toggle CORS settings for playing around with our service.
                 </li>
+		</ul>
+		</li>
             </ol>
         </div>
 
