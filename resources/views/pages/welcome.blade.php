@@ -1,5 +1,7 @@
 @extends('layouts.app')
 
+@section('pageTitle', 'Packet Pigeon (BETA)')
+
 @section('content')
     <div class="welcome-page">
 

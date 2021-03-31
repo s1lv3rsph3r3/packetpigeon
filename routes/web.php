@@ -15,12 +15,11 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-// The welcome page
-Route::get('/', 'WelcomeController@show');
+// Welcome Page
+Route::get('/', 'WelcomeController@show')->name('welcome');
 
-Route::get('/working-sample', function() {
-	return view('working_sample');
-})->name('working-sample');
+// Working sample
+Route::get('/working-sample', 'WorkingSampleController@show')->name('working-sample');
 
 //Auth::routes();
 
@@ -48,15 +47,15 @@ Route::get('/working-sample', function() {
 // Route::post('/delete-domain', 'HomeController@deleteDomain')->name('request.delete-domain');
 
 // Beta testing only - will be removed in future release
-Route::get('/beta-user', function(){
+Route::get('/beta-user', function () {
     $user = User::where('email', 'test@test.com')->count();
-    if($user === 0){
+    if ($user === 0)
+    {
         User::create([
-           'name' => 'Test',
-           'email' => 'test@test.com',
+            'name' => 'Test',
+            'email' => 'test@test.com',
             'password' => bcrypt('password')
         ]);
-
         return 'User successfully created.';
     }
     return 'Beta user account already exists.';
