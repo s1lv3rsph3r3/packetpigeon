@@ -15,14 +15,12 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-// No auth
-Route::get('/', function () {
-    return view('welcome');
-});
+// The welcome page
+Route::get('/', 'WelcomeController@show');
 
 Route::get('/working-sample', function() {
 	return view('working_sample');
-});
+})->name('working-sample');
 
 //Auth::routes();
 
