@@ -1,0 +1,38 @@
+html, body {
+    font-family: $font-family-sans-serif;
+    background-color: #FFF;
+    color: #636b6f;
+    margin: 0;
+}
+
+.page-container {
+    padding-top: 5rem;
+}
+
+.blink-me {
+    animation: blinker 3s linear infinite;
+}
+
+.cursor-default {
+    cursor: default;
+}
+
+@keyframes blinker {
+    0% {
+        color: #28a745;
+        background-color: transparent;
+        background-image: none;
+        border-color: #28a745;
+    }
+    50% {
+        color: #fff;
+        background-color: #28a745;
+        border-color: #28a745;
+    }
+    100% {
+        color: #28a745;
+        background-color: transparent;
+        background-image: none;
+        border-color: #28a745;
+    }
+}
