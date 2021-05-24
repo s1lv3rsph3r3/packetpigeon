@@ -1,0 +1,200 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Immutable Deployment
+
+# Controls when the action will run.
+on:
+  # Triggers the workflow on push only for the main branch
+  push:
+    branches: [ master ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    name: Build
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      # Runs a single command using the runners shell
+      - name: Run a one-line script
+        run: echo Hello, world!
+
+      # Runs a set of commands using the runners shell
+      - name: Run a multi-line script
+        run: |
+          echo Add other actions to build,
+          echo test, and deploy your project.
+
+      - name: Using secrets action
+        env:
+          SUPER_SECRET: ${{ secrets.TESTING_DEPLOYMENT_KEY }}
+        run: |
+          echo "Got here"
+  terraform:
+    needs: [build]
+    runs-on: ubuntu-20.04
+    name: Setup terraform
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install terraform
+        env:
+          TERRAFORM_VERSION: "0.14.9"
+        run: |
+          tf_version=$TERRAFORM_VERSION
+          wget https://releases.hashicorp.com/terraform/"$tf_version"/terraform_"$tf_version"_linux_amd64.zip
+          unzip terraform_"$tf_version"_linux_amd64.zip
+          sudo mv terraform /usr/local/bin/
+      - name: Verify Terraform version
+        run: terraform --version
+      - name: Terraform init
+        run: |
+          echo Skipping
+#          rm -rf /home/runner/.ssh
+#          mkdir /home/runner/.ssh
+#          echo "${{ secrets.DO_SSH_PRIV }}" > /home/runner/.ssh/priv_key_test
+#          echo "${{ secrets.DO_SSH_PUB }}" > /home/runner/.ssh/priv_key_test.pub
+#          chmod 600 /home/runner/.ssh/priv_key_test
+#          # clone a repository that contains state
+#          cd "$GITHUB_WORKSPACE"
+#          GIT_SSH_COMMAND='ssh -i /home/runner/.ssh/priv_key_test' git clone git@github.com:s1lv3rsph3r3/packetpigeon-deployment-state.git
+#          ls -a
+#          # copy across the state file
+#          cp -r "$GITHUB_WORKSPACE/packetpigeon-deployment-state/terraform.tfstate" "$GITHUB_WORKSPACE/iac/terraform/terraform.tfstate"
+#          rm -rf packetpigeon-deployment-state
+#          cd iac/terraform
+#          terraform init -input=false
+#          terraform validate
+#          terraform plan -var "do_token=${{ secrets.TESTING_DEPLOYMENT_KEY }}" -var "pvt_key=$HOME/.ssh/id_rsa" -var "cloudflare_token{{ secrets.CLOUDFLARE_TOKEN }}" -var "cloudflare_zone_id={{ secrets.CLOUDFLARE_ZONE_ID }}"
+#          echo "yes" | terraform destroy -var "do_token=${{ secrets.TESTING_DEPLOYMENT_KEY }}" -var "pvt_key=${{ secrets.DO_SSH_PRIV }}" -var "pvt_key_file=/home/runner/.ssh/priv_key_test" -var "cloudflare_token={{ secrets.CLOUDFLARE_TOKEN }}" -var "cloudflare_zone_id={{ secrets.CLOUDFLARE_ZONE_ID }}"
+#          rm -rf terraform.state
+
+      - name: Configure AWS credentials from Test account
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Set env
+        run: echo "UUID=$(uuidgen)" >> $GITHUB_ENV
+
+      - name: Set deployment value
+        run: echo "DEPLOYMENT_VALUE=green" >> $GITHUB_ENV
+
+      - name: Test the env just created
+        run: echo ${{ env.UUID }}
+
+      - name: Initialise for server_up GREEN
+        run: |
+          cd iac/terraform
+          terraform init
+
+      - name: Terraform validate for server_up GREEN
+        run: |
+          cd iac/terraform
+          terraform validate
+
+      - name: Terraform plan for server_up GREEN
+        run: |
+          cd iac/terraform
+          terraform plan -var "do_token=${{ secrets.TESTING_DEPLOYMENT_KEY }}" -var "pvt_key=$HOME/.ssh/id_rsa" -var "cloudflare_token=${{ secrets.CLOUDFLARE_TOKEN }}" -var "cloudflare_zone_id=${{ secrets.CLOUDFLARE_ZONE_ID }}" -var "aws_region=${{ secrets.AWS_REGION }}" -var "aws_access_key=${{ secrets.AWS_ACCESS_KEY }}" -var "aws_secret_key=${{ secrets.AWS_SECRET_KEY }}" -var "uuid=${{ env.UUID }}" -var "deployment_environment=${{ env.DEPLOYMENT_VALUE }}" -var "deployment_stage=server_up"
+
+      - name: Terraform apply for server_up GREEN
+        run: |
+          cd iac/terraform
+          rm -rf /home/runner/.ssh
+          mkdir /home/runner/.ssh
+          echo "${{ secrets.DO_SSH_PRIV }}" > /home/runner/.ssh/priv_key_test
+          echo "${{ secrets.DO_SSH_PUB }}" > /home/runner/.ssh/priv_key_test.pub
+          chmod 600 /home/runner/.ssh/priv_key_test
+          cd "$GITHUB_WORKSPACE"
+          GIT_SSH_COMMAND='ssh -i /home/runner/.ssh/priv_key_test' git clone git@github.com:s1lv3rsph3r3/packetpigeon.git
+          cd "$GITHUB_WORKSPACE/iac/terraform"
+          echo "yes" | terraform apply -var "do_token=${{ secrets.TESTING_DEPLOYMENT_KEY }}" -var "pvt_key=${{ secrets.DO_SSH_PRIV }}" -var "pvt_key_file=/home/runner/.ssh/priv_key_test" -var "cloudflare_token=${{ secrets.CLOUDFLARE_TOKEN }}" -var "cloudflare_zone_id=${{ secrets.CLOUDFLARE_ZONE_ID }}" -var "aws_region=${{ secrets.AWS_REGION }}" -var "aws_access_key=${{ secrets.AWS_ACCESS_KEY }}" -var "aws_secret_key=${{ secrets.AWS_SECRET_KEY }}" -var "uuid=${{ env.UUID }}" -var "deployment_environment=${{ env.DEPLOYMENT_VALUE }}" -var "deployment_stage=server_up"
+
+      - name: Terraform init for dns_up GREEN
+        run: |
+          cd iac/terraform
+          terraform init
+
+      - name: Terraform validate for dns_up GREEN
+        run: |
+          cd iac/terraform
+          terraform validate
+
+      - name: Terraform plan for dns_up GREEN
+        run: |
+          cd iac/terraform
+          terraform plan -var "do_token=${{ secrets.TESTING_DEPLOYMENT_KEY }}" -var "pvt_key=$HOME/.ssh/id_rsa" -var "cloudflare_token=${{ secrets.CLOUDFLARE_TOKEN }}" -var "cloudflare_zone_id=${{ secrets.CLOUDFLARE_ZONE_ID }}" -var "aws_region=${{ secrets.AWS_REGION }}" -var "aws_access_key=${{ secrets.AWS_ACCESS_KEY }}" -var "aws_secret_key=${{ secrets.AWS_SECRET_KEY }}" -var "uuid=${{ env.UUID }}" -var "deployment_environment=${{ env.DEPLOYMENT_VALUE }}" -var "deployment_stage=dns_up"
+
+      - name: Terraform apply for dns_up GREEN
+        run: |
+          cd iac/terraform
+          rm -rf /home/runner/.ssh
+          mkdir /home/runner/.ssh
+          echo "${{ secrets.DO_SSH_PRIV }}" > /home/runner/.ssh/priv_key_test
+          echo "${{ secrets.DO_SSH_PUB }}" > /home/runner/.ssh/priv_key_test.pub
+          chmod 600 /home/runner/.ssh/priv_key_test
+          cd "$GITHUB_WORKSPACE/iac/terraform"
+          echo "yes" | terraform apply -var "do_token=${{ secrets.TESTING_DEPLOYMENT_KEY }}" -var "pvt_key=${{ secrets.DO_SSH_PRIV }}" -var "pvt_key_file=/home/runner/.ssh/priv_key_test" -var "cloudflare_token=${{ secrets.CLOUDFLARE_TOKEN }}" -var "cloudflare_zone_id=${{ secrets.CLOUDFLARE_ZONE_ID }}" -var "aws_region=${{ secrets.AWS_REGION }}" -var "aws_access_key=${{ secrets.AWS_ACCESS_KEY }}" -var "aws_secret_key=${{ secrets.AWS_SECRET_KEY }}" -var "uuid=${{ env.UUID }}" -var "deployment_environment=${{ env.DEPLOYMENT_VALUE }}" -var "deployment_stage=dns_up"
+
+      - name: Terraform init for dns_down GREEN
+        run: |
+          cd iac/terraform
+          terraform init
+
+      - name: Terraform validate for dns_down GREEN
+        run: |
+          cd iac/terraform
+          terraform validate
+
+      - name: Terraform plan for dns_down GREEN
+        run: |
+          cd iac/terraform
+          terraform plan -var "do_token=${{ secrets.TESTING_DEPLOYMENT_KEY }}" -var "pvt_key=$HOME/.ssh/id_rsa" -var "cloudflare_token=${{ secrets.CLOUDFLARE_TOKEN }}" -var "cloudflare_zone_id=${{ secrets.CLOUDFLARE_ZONE_ID }}" -var "aws_region=${{ secrets.AWS_REGION }}" -var "aws_access_key=${{ secrets.AWS_ACCESS_KEY }}" -var "aws_secret_key=${{ secrets.AWS_SECRET_KEY }}" -var "uuid=${{ env.UUID }}" -var "deployment_environment=${{ env.DEPLOYMENT_VALUE }}" -var "deployment_stage=dns_down"
+
+      - name: Terraform apply for dns_down GREEN
+        run: |
+          cd iac/terraform
+          rm -rf /home/runner/.ssh
+          mkdir /home/runner/.ssh
+          echo "${{ secrets.DO_SSH_PRIV }}" > /home/runner/.ssh/priv_key_test
+          echo "${{ secrets.DO_SSH_PUB }}" > /home/runner/.ssh/priv_key_test.pub
+          chmod 600 /home/runner/.ssh/priv_key_test
+          cd "$GITHUB_WORKSPACE/iac/terraform"
+          echo "yes" | terraform apply -var "do_token=${{ secrets.TESTING_DEPLOYMENT_KEY }}" -var "pvt_key=${{ secrets.DO_SSH_PRIV }}" -var "pvt_key_file=/home/runner/.ssh/priv_key_test" -var "cloudflare_token=${{ secrets.CLOUDFLARE_TOKEN }}" -var "cloudflare_zone_id=${{ secrets.CLOUDFLARE_ZONE_ID }}" -var "aws_region=${{ secrets.AWS_REGION }}" -var "aws_access_key=${{ secrets.AWS_ACCESS_KEY }}" -var "aws_secret_key=${{ secrets.AWS_SECRET_KEY }}" -var "uuid=${{ env.UUID }}" -var "deployment_environment=${{ env.DEPLOYMENT_VALUE }}" -var "deployment_stage=dns_down"
+
+      - name: Terraform init for server_down GREEN
+        run: |
+          cd iac/terraform
+          terraform init
+
+      - name: Terraform validate for server_down GREEN
+        run: |
+          cd iac/terraform
+          terraform validate
+
+      - name: Terraform plan for server_down GREEN
+        run: |
+          cd iac/terraform
+          terraform plan -var "do_token=${{ secrets.TESTING_DEPLOYMENT_KEY }}" -var "pvt_key=$HOME/.ssh/id_rsa" -var "cloudflare_token=${{ secrets.CLOUDFLARE_TOKEN }}" -var "cloudflare_zone_id=${{ secrets.CLOUDFLARE_ZONE_ID }}" -var "aws_region=${{ secrets.AWS_REGION }}" -var "aws_access_key=${{ secrets.AWS_ACCESS_KEY }}" -var "aws_secret_key=${{ secrets.AWS_SECRET_KEY }}" -var "uuid=${{ env.UUID }}" -var "deployment_environment=${{ env.DEPLOYMENT_VALUE }}" -var "deployment_stage=server_down"
+
+      - name: Terraform apply for server_down GREEN
+        run: |
+          cd iac/terraform
+          rm -rf /home/runner/.ssh
+          mkdir /home/runner/.ssh
+          echo "${{ secrets.DO_SSH_PRIV }}" > /home/runner/.ssh/priv_key_test
+          echo "${{ secrets.DO_SSH_PUB }}" > /home/runner/.ssh/priv_key_test.pub
+          chmod 600 /home/runner/.ssh/priv_key_test
+          cd "$GITHUB_WORKSPACE/iac/terraform"
+          echo "yes" | terraform apply -var "do_token=${{ secrets.TESTING_DEPLOYMENT_KEY }}" -var "pvt_key=${{ secrets.DO_SSH_PRIV }}" -var "pvt_key_file=/home/runner/.ssh/priv_key_test" -var "cloudflare_token=${{ secrets.CLOUDFLARE_TOKEN }}" -var "cloudflare_zone_id=${{ secrets.CLOUDFLARE_ZONE_ID }}" -var "aws_region=${{ secrets.AWS_REGION }}" -var "aws_access_key=${{ secrets.AWS_ACCESS_KEY }}" -var "aws_secret_key=${{ secrets.AWS_SECRET_KEY }}" -var "uuid=${{ env.UUID }}" -var "deployment_environment=${{ env.DEPLOYMENT_VALUE }}" -var "deployment_stage=server_down"
