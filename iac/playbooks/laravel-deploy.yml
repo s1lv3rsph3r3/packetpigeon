@@ -24,7 +24,7 @@
 
     - name: Rsync application files to the remote server
       synchronize:
-        src: "{{ app_root_dir }}"
+        src: "../../"
         dest: "{{ remote_www_root }}"
         rsync_opts:
           - "--no-motd"
