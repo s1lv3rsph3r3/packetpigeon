@@ -24,7 +24,7 @@
 
     - name: Rsync application files to the remote server
       synchronize:
-        src: "../../"
+        src: "${{ env.GITHUB_WORKSPACE }}"
         dest: "{{ remote_www_root }}"
         rsync_opts:
           - "--no-motd"

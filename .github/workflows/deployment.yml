@@ -117,7 +117,6 @@ jobs:
           echo "${{ secrets.DO_SSH_PUB }}" > /home/runner/.ssh/priv_key_test.pub
           chmod 600 /home/runner/.ssh/priv_key_test
           cd "$GITHUB_WORKSPACE"
-          GIT_SSH_COMMAND='ssh -i /home/runner/.ssh/priv_key_test' git clone git@github.com:s1lv3rsph3r3/packetpigeon.git
           cd "$GITHUB_WORKSPACE/iac/terraform"
           echo "yes" | terraform apply -var "do_token=${{ secrets.DO_AUTH_TOKEN }}" -var "pvt_key=${{ secrets.DO_SSH_PRIV }}" -var "pvt_key_file=/home/runner/.ssh/priv_key_test" -var "cloudflare_token=${{ secrets.CLOUDFLARE_TOKEN }}" -var "cloudflare_zone_id=${{ secrets.CLOUDFLARE_ZONE_ID }}" -var "aws_region=${{ secrets.AWS_REGION }}" -var "aws_access_key=${{ secrets.AWS_ACCESS_KEY }}" -var "aws_secret_key=${{ secrets.AWS_SECRET_KEY }}" -var "uuid=${{ env.UUID }}" -var "deployment_environment=${{ env.DEPLOYMENT_VALUE }}" -var "deployment_stage=server_up"
 
