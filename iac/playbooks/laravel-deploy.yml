@@ -22,9 +22,10 @@
         group: "{{ remote_user }}"
 
 
+    # TODO: This should use vars
     - name: Rsync application files to the remote server
       synchronize:
-        src: "${{ env.GITHUB_WORKSPACE }}"
+        src: "/home/runner/work/packetpigeon/packetpigeon"
         dest: "{{ remote_www_root }}"
         rsync_opts:
           - "--no-motd"
