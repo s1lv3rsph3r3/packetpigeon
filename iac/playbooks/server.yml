@@ -1,0 +1,7 @@
+---
+- hosts: all
+  become: true
+  pre_tasks:
+    - raw: apt-get install -y python-simplejson
+  roles:
+    - { role: nginx, tags: ['nginx', 'web', 'http', 'lemp'] }

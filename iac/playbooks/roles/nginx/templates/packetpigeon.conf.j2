@@ -1,0 +1,82 @@
+server {
+    listen [::]:{{ https_port }} ssl ipv6only=on;
+    listen {{ https_port }} ssl;
+
+    # listen {{ http_port }};
+    # listen [::]:{{ http_port }};
+
+    server_name {{ http_host }} www.{{ http_host }} {{ uuid }}.{{ http_host }};
+    root {{ document_root }};
+
+    add_header X-Frame-Options "SAMEORIGIN";
+    add_header X-XSS-Protection "1; mode=block";
+    add_header X-Content-Type-Options "nosniff";
+
+    charset utf-8;
+
+    index index.html index.htm index.php;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location = /favicon.ico { access_log off; log_not_found off; }
+    location = /robots.txt  { access_log off; log_not_found off; }
+
+    error_page 404 /index.php;
+
+    location ~ \.php$ {
+        fastcgi_pass unix:/var/run/php/php7.4-fpm.sock;
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
+
+    location ~ /\.(?!well-known).* {
+        deny all;
+    }
+
+    ssl_certificate /etc/letsencrypt/live/{{ http_host }}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/{{ http_host }}/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/nginx/dhparams.pem;
+}
+
+server {
+    if ($host = www.{{ http_host }}) {
+            return 307 https://$host$request_uri;
+    }
+
+    listen {{ http_port }};
+    listen [::]:{{ http_port }};
+
+    server_name www.{{ http_host }};
+
+    return 404;
+}
+
+server {
+    if ($host = {{ http_host }}) {
+        return 307 https://$host$request_uri;
+    }
+
+    listen {{ http_port }};
+    listen [::]:{{ http_port }};
+
+    server_name {{ http_host }};
+
+    return 404;
+}
+
+server {
+    if ($host = {{ uuid }}.{{ http_host }}) {
+        return 307 https://$host$request_uri;
+    }
+
+    listen {{ http_port }};
+    listen [::]:{{ http_port }};
+
+    server_name {{ uuid }}.{{ http_host }};
+
+    return 404;
+}

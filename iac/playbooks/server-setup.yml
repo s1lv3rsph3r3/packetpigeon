@@ -1,0 +1,9 @@
+---
+- hosts: all
+  become: true
+  roles:
+    - { role: setup, tags: ['setup'] }
+
+    - { role: php, tags: ['php', 'web', 'php-fpm', 'lemp'] }
+
+    - { role: composer, tags: ['composer'] }
