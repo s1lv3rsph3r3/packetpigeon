@@ -23,7 +23,7 @@ resource "digitalocean_droplet" "blue" {
     ]
   }
   provisioner "local-exec" {
-    command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u root -i '${self.ipv4_address},' --private-key ${var.pvt_key_file} ../server-setup.yml"
+    command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u root -i '${self.ipv4_address},' --private-key ${var.pvt_key_file} ../playbooks/server-setup.yml"
   }
   provisioner "remote-exec" {
     inline = [
@@ -34,10 +34,10 @@ resource "digitalocean_droplet" "blue" {
     ]
   }
   provisioner "local-exec" {
-    command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u sammy -i '${self.ipv4_address},' --private-key ${var.pvt_key_file} ../laravel-deploy.yml"
+    command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u sammy -i '${self.ipv4_address},' --private-key ${var.pvt_key_file} ../playbooks/laravel-deploy.yml"
   }
   provisioner "local-exec" {
-    command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u sammy -i '${self.ipv4_address},' --private-key ${var.pvt_key_file} ../server.yml -e \"dns_cloudflare_api_key=${var.cloudflare_token}\" -e \"aws_access_key=${var.aws_access_key}\" -e \"aws_secret_key=${var.aws_secret_key}\" -e \"do_instance_ip=${self.ipv4_address}\" -e \"uuid=${var.uuid}\""
+    command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u sammy -i '${self.ipv4_address},' --private-key ${var.pvt_key_file} ../playbooks/server.yml -e \"dns_cloudflare_api_key=${var.cloudflare_token}\" -e \"aws_access_key=${var.aws_access_key}\" -e \"aws_secret_key=${var.aws_secret_key}\" -e \"do_instance_ip=${self.ipv4_address}\" -e \"uuid=${var.uuid}\""
   }
 }
 
