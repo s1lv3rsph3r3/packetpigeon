@@ -88,7 +88,7 @@ jobs:
         run: echo "UUID=$(uuidgen)" >> $GITHUB_ENV
 
       - name: Set deployment value
-        run: echo "DEPLOYMENT_VALUE=blue" >> $GITHUB_ENV
+        run: echo "DEPLOYMENT_VALUE=green" >> $GITHUB_ENV
 
       - name: Test the env just created
         run: echo ${{ env.UUID }}
